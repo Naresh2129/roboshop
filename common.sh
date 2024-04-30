@@ -29,6 +29,26 @@ func_systemd() {
     systemctl restart ${component} &>>${log}
 
 }
+
+func_schema_setup() {
+  if [ "${schema_type}" =="mongodb" ]; then
+    echo -e "\e[36m>>>>>>>>>>>>>install mongo client<<<<<<<<<<<\e[0m" |tee -a /tmp/roboshop.log
+    dnf install mongodb-org-shell -y &>>${log}
+
+    echo -e "\e[36m>>>>>>>>>>>>>load ${component} schema<<<<<<<<<<<\e[0m" |tee -a /tmp/roboshop.log
+    mongo --host mongodb.nkdevops29.online </app/schema/${component}.js &>>${log}
+  fi
+
+  if [ "${schema_type}" == "mysql" ]; then
+   echo -e "\e[36m>>>>>>>>>>>>>install my sql client <<<<<<<<<<<\e[0m"
+   dnf install mysql -y &>>${log}
+
+   echo -e "\e[36m>>>>>>>>>>>>> load schema<<<<<<<<<<<\e[0m"
+   mysql -h mysql.nkdevops29.online -uroot -pRoboShop@1 < /app/schema/${component}.sql &>>${log}
+  fi
+
+}
+
 func_nodejs() {
   log=/tmp/roboshop.log
 
@@ -47,13 +67,10 @@ func_nodejs() {
   echo -e "\e[36m>>>>>>>>>>>>>download nodejs dependencies<<<<<<<<<<<\e[0m"
   npm install &>>${log}
 
-  echo -e "\e[36m>>>>>>>>>>>>>install mongo client<<<<<<<<<<<\e[0m"
-  dnf install mongodb-org-shell -y &>>${log}
-
-  echo -e "\e[36m>>>>>>>>>>>>>load ${component} schema<<<<<<<<<<<\e[0m"
-  mongo --host mongodb.nkdevops29.online </app/schema/${component}.js &>>${log}
+  funnc_schema_setup
 
   func_systemd
+
  }
  func_java(){
 
@@ -66,13 +83,9 @@ func_nodejs() {
   mvn clean package
   mv target/shipping-1.0.jar shipping.jar &>>${log}
 
-  echo -e "\e[36m>>>>>>>>>>>>>install my sql client <<<<<<<<<<<\e[0m"
-  dnf install mysql -y &>>${log}
+  func_schema_setup
 
-  echo -e "\e[36m>>>>>>>>>>>>> load schema<<<<<<<<<<<\e[0m"
-  mysql -h mysql.nkdevops29.online -uroot -pRoboShop@1 < /app/schema/${component}.sql &>>${log}
-
- func_systemd
+  func_systemd
 }
 
 func_python() {
