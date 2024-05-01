@@ -49,7 +49,7 @@ func_systemd() {
 }
 
 func_schema_setup() {
-  if [ "${schema_type}" =="mongodb" ]; then
+  if [ "${schema_type}" == "mongodb" ]; then
     echo -e "\e[36m>>>>>>>>>>>>>install mongo client<<<<<<<<<<<\e[0m" |tee -a /tmp/roboshop.log
     dnf install mongodb-org-shell -y &>>${log}
 
@@ -87,7 +87,7 @@ func_exit_status
   echo -e "\e[36m>>>>>>>>>>>>>download nodejs dependencies<<<<<<<<<<<\e[0m"
   npm install &>>${log}
 func_exit_status
-  funnc_schema_setup
+  func_schema_setup
 
   func_systemd
 func_exit_status
